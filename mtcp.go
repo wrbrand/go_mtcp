@@ -67,35 +67,12 @@ func (sa *SockaddrInet6) sockaddr() (unsafe.Pointer, _Socklen, error) {
 	return unsafe.Pointer(&sa.raw), SizeofSockaddrInet6, nil
 }
 
-func Getsockname(fd int) (sa Sockaddr, err error) {
+func Getsockname(fd int) (err error) {
   var rsa RawSockaddrAny
   var slen _Socklen = SizeofSockaddrAny
   e := C.zmtcp_getsockname(C.int(cpuid), C.int(fd), unsafe.Pointer(&rsa), unsafe.Pointer(&slen))
   if e != 0 {
     panic("Error calling mtcp_getsockname")
   }
-
-  // Clipped from anyToSockaddr
-  switch rsa.Addr.Family {
-  case AF_INET: // AF_INET
-    pp := (*RawSockaddrInet4)(unsafe.Pointer(&rsa))
-    sa := new(SockaddrInet4)
-    p := (*[2]byte)(unsafe.Pointer(&pp.Port))
-    sa.Port = int(p[0])<< 8 + int(p[1])
-    for i := 0; i < len(sa.Addr); i++ {
-      sa.Addr[i] = pp.Addr[i]
-    }
-    return sa, nil
-  case AF_INET6: // AF_INET6
-    pp := (*RawSockaddrInet6)(unsafe.Pointer(&rsa))
-    sa := new(SockaddrInet6)
-    p := (*[2]byte)(unsafe.Pointer(&pp.Port))
-    sa.Port = int(p[0])<<8 + int(p[1])
-    sa.ZoneId = pp.Scope_id
-    for i := 0; i < len(sa.Addr); i++ {
-      sa.Addr[i] = pp.Addr[i]
-    }
-    return sa, nil
-  }
-  return nil, EAFNOSUPPORT
+  return nil
 }
