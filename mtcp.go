@@ -6,6 +6,10 @@ package mtcp
 #define _GNU_SOURCE
 #include <mtcp_api.h>
 
+int zmtcp_accept(int cpuid, int fd, void *sa, void *addrlen) {
+  return mtcp_accept((mctx_t) &cpuid, fd, (struct sockaddr *) sa, (socklen_t *) addrlen);
+}
+
 int zmtcp_getsockname(int cpuid, int fd, void *rsa, void *slen) {
   return mtcp_getsockname((mctx_t) &cpuid, fd, (struct sockaddr *) rsa, (socklen_t *) slen);
 }
@@ -75,10 +79,19 @@ func (sa *SockaddrInet6) sockaddr() (unsafe.Pointer, _Socklen, error) {
 	return unsafe.Pointer(&sa.raw), SizeofSockaddrInet6, nil
 }
 
-func Getsockname(fd int, rsa unsafe.Pointer) (err error) {
+func Accept(sockid int, sa unsafe.Pointer, addrlen unsafe.Pointer) (fd int, err error) {
+  fd = int(C.zmtcp_accept(C.int(cpuid), C.int(sockid), sa, addrlen));
+  if fd < 0 {
+    panic("Error calling mtcp_accept")
+  }
+  return fd, nil
+}
+
+// TODO: Better error bubbling
+func Getsockname(fd int, sa unsafe.Pointer) (err error) {
   var slen _Socklen = SizeofSockaddrAny
-  e := C.zmtcp_getsockname(C.int(cpuid), C.int(fd), rsa, unsafe.Pointer(&slen))
-  if e != 0 {
+  e := C.zmtcp_getsockname(C.int(cpuid), C.int(fd), sa, unsafe.Pointer(&slen))
+  if e < 0 {
     panic("Error calling mtcp_getsockname")
   }
   return nil
