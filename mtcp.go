@@ -9,6 +9,11 @@ package mtcp
 int zmtcp_getsockname(int cpuid, int fd, void *rsa, void *slen) {
   return mtcp_getsockname((mctx_t) &cpuid, fd, (struct sockaddr *) rsa, (socklen_t *) slen);
 }
+
+int zmtcp_write(int cpuid, int fd, void *p, unsigned len) {
+  return mtcp_write((mctx_t) &cpuid, fd, (char *) p, len);
+}
+
 */
 import "C"
 import "unsafe"
@@ -74,4 +79,12 @@ func Getsockname(fd int, rsa unsafe.Pointer) (err error) {
     panic("Error calling mtcp_getsockname")
   }
   return nil
+}
+
+func Write(fd int, p []byte, l int) (n int, err error) {
+  e := C.zmtcp_write(C.int(cpuid), C.int(fd), unsafe.Pointer(&p), C.uint(l))
+  if e < 0 {
+    panic("Error calling mtcp_write")
+  }
+  return int(e), nil
 }
