@@ -67,10 +67,9 @@ func (sa *SockaddrInet6) sockaddr() (unsafe.Pointer, _Socklen, error) {
 	return unsafe.Pointer(&sa.raw), SizeofSockaddrInet6, nil
 }
 
-func Getsockname(fd int) (err error) {
-  var rsa RawSockaddrAny
+func Getsockname(fd int, rsa unsafe.Pointer) (err error) {
   var slen _Socklen = SizeofSockaddrAny
-  e := C.zmtcp_getsockname(C.int(cpuid), C.int(fd), unsafe.Pointer(&rsa), unsafe.Pointer(&slen))
+  e := C.zmtcp_getsockname(C.int(cpuid), C.int(fd), rsa, unsafe.Pointer(&slen))
   if e != 0 {
     panic("Error calling mtcp_getsockname")
   }
