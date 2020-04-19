@@ -92,7 +92,7 @@ func Write(fd int, p []byte, l int) (n int, err error) {
   return int(e), nil
 }
 
-func Connect(fd int, p unsafe.Pointer, l _Socklen) (err error) {
+func Connect(fd int, p unsafe.Pointer, l uint32) (err error) {
   e := C.zmtcp_connect(C.int(cpuid), C.int(fd), p, C.uint(l))
   if e < 0 {
     panic("Error calling mtcp_connect")
