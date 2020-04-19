@@ -14,6 +14,9 @@ int zmtcp_write(int cpuid, int fd, void *p, unsigned len) {
   return mtcp_write((mctx_t) &cpuid, fd, (char *) p, len);
 }
 
+int zmtcp_connect(int cpuid, int fd, void *p, unsigned len) {
+  return mtcp_connect((mctx_t) &cpuid,fd, (const struct sockaddr *) p, len);
+}
 */
 import "C"
 import "unsafe"
@@ -87,4 +90,12 @@ func Write(fd int, p []byte, l int) (n int, err error) {
     panic("Error calling mtcp_write")
   }
   return int(e), nil
+}
+
+func Connect(fd int, p unsafe.Pointer, l _Socklen) (err error) {
+  e := C.zmtcp_connect(C.int(cpuid), C.int(fd), p, C.uint(l))
+  if e < 0 {
+    panic("Error calling mtcp_connect")
+  }
+  return nil
 }
